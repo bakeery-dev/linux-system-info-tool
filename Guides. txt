@@ -1,0 +1,45 @@
+Create a new user
+sudo useradd -m -s /bin/bash labuser
+
+Set password
+echo "labuser:Lab@123" | sudo chpasswd
+
+Add to sudo group (optional for demonstration)
+sudo usermod -aG sudo labuser
+
+Verify user exists
+cat /etc/passwd | grep labuser
+
+
+## Anti-forensic demo:
+sudo vipw
+this Show how attackers can create hidden accounts.
+
+## Install a tool 
+sudo tee /usr/local/bin/labtool.sh > /dev/null << 'EOF'
+#!/bin/bash
+echo "Lab tool running"
+EOF
+
+Make it executable
+sudo chmod +x /usr/local/bin/labtool.sh
+
+Run it
+/usr/local/bin/labtool.sh
+
+## Anti forensic
+
+Hide script in a dot directory
+sudo mkdir -p /usr/local/.hidden
+sudo mv /usr/local/bin/labtool.sh /usr/local/.hidden/
+sudo ln -s /usr/local/.hidden/labtool.sh /usr/local/bin/labtool.sh
+
+## Modify Logs
+Clear log entries
+sudo truncate -s 0 /var/log/syslog
+
+Fake modification time on lab script
+sudo touch -t 202512220900 /usr/local/.hidden/labtool.sh
+
+#Fake timestamps on hidden user files
+sudo touch -t 202512220901 /home/labuser/.bashrc
